@@ -1,0 +1,122 @@
+/* Media queries y responsive */
+@media (max-width: 1200px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .container {
+        max-width: 800px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+        background: var(--color-secundario);
+    }
+
+    .container {
+        padding: 24px 20px;
+        border-radius: 20px;
+        background: var(--color-secundario);
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        color: var(--color-primario-oscuro);
+    }
+
+    .qr-section {
+        padding: 20px 16px;
+        background: var(--color-secundario);
+    }
+
+    #qrcode {
+        min-width: 180px;
+        min-height: 180px;
+        background: var(--color-blanco);
+    }
+
+    .tabs {
+        margin-bottom: 24px;
+        background: var(--color-secundario);
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        color: var(--color-texto-claro);
+    }
+
+    .students-table {
+        font-size: 0.8rem;
+        background: var(--color-blanco);
+    }
+
+    .students-table th,
+    .students-table td {
+        padding: 8px 12px;
+        color: var(--color-texto);
+    }
+
+    .notification {
+        right: 16px;
+        left: 16px;
+        max-width: none;
+        transform: translateY(-100px);
+        background: var(--color-blanco);
+    }
+
+    .notification--show {
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 20px 16px;
+        background: var(--color-secundario);
+    }
+
+    h1 {
+        font-size: 1.6rem;
+        color: var(--color-primario-oscuro);
+    }
+
+    .qr-section {
+        padding: 16px 12px;
+        background: var(--color-secundario);
+    }
+
+    #qrcode {
+        min-width: 160px;
+        min-height: 160px;
+        background: var(--color-blanco);
+    }
+
+    button {
+        padding: 14px 20px;
+        font-size: 0.9rem;
+        background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+        color: var(--color-blanco);
+    }
+
+    input[type="text"],
+    input[type="email"] {
+        padding: 14px 16px;
+        background: var(--color-blanco);
+        color: var(--color-texto);
+    }
+
+    .students-table {
+        font-size: 0.7rem;
+        background: var(--color-blanco);
+    }
+
+    .students-table th,
+    .students-table td {
+        padding: 6px 8px;
+        color: var(--color-texto);
+    }
+}

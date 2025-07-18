@@ -1,0 +1,156 @@
+/* Estilos para gestión de alumnos */
+.students-management {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--color-secundario);
+}
+
+#open-student-form-btn {
+    padding: 8px 18px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+    color: var(--color-blanco);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(26, 75, 140, 0.15);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#open-student-form-btn:hover {
+    background: linear-gradient(135deg, var(--color-primario-claro) 0%, var(--color-primario) 100%);
+    box-shadow: 0 4px 12px rgba(226, 226, 226, 0.25);
+}
+
+.students-table-container {
+    margin-top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 400px;
+    /* border: 2px solid var(--color-primario-claro); */
+}
+
+.students-table-container h3 {
+    color: var(--color-primario-oscuro);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-secundario);
+    padding-top: 12px;
+    padding-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(26, 75, 140, 0.04);
+}
+
+.students-table {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+    background: var(--color-blanco);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(26, 75, 140, 0.08);
+    margin-bottom: 16px;
+    flex: 1;
+}
+
+.students-table thead {
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+    color: var(--color-blanco);
+}
+
+.students-table th,
+.students-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-gris-claro);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.students-table td:last-child {
+    min-width: 120px;
+    text-align: center;
+}
+
+.students-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.students-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.students-table tr:nth-child(even) {
+    background: var(--color-gris-claro);
+}
+
+.students-table tbody tr:hover {
+    background: var(--color-primario-claro);
+    color: var(--color-blanco);
+    transition: background 0.2s ease;
+}
+
+.students-table tr:last-child td {
+    border-bottom: none;
+}
+
+.student-qr-btn {
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+    color: var(--color-blanco);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(26, 75, 140, 0.15);
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.student-qr-btn:hover {
+    background: linear-gradient(135deg, var(--color-primario-claro) 0%, var(--color-primario) 100%);
+    box-shadow: 0 4px 12px rgba(26, 75, 140, 0.25);
+}
+
+.history-list li.error {
+    color: var(--color-accento);
+    background: linear-gradient(135deg, var(--color-secundario) 0%, var(--color-gris-claro) 100%);
+    border-left: 4px solid var(--color-accento);
+}
+
+.history-list li.success {
+    color: var(--color-primario);
+    background: linear-gradient(135deg, var(--color-secundario) 0%, var(--color-gris-claro) 100%);
+    border-left: 4px solid var(--color-primario);
+}

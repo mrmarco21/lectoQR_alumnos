@@ -1,0 +1,180 @@
+/* Componentes reutilizables */
+.tabs {
+    display: flex;
+    background: var(--color-secundario);
+    border-radius: 16px;
+    padding: 6px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-gris-claro);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-texto-claro);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 12px;
+}
+
+.tab-btn:hover::before {
+    opacity: 0.1;
+}
+
+.tab-btn--active {
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+    color: var(--color-blanco);
+    box-shadow: 0 4px 15px rgba(26, 75, 140, 0.2);
+    transform: translateY(-2px);
+}
+
+.tab-btn--active::before {
+    opacity: 0;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.tab-content--active {
+    display: block;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+button {
+    padding: 16px 28px;
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-claro) 100%);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(26, 75, 140, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(26, 75, 140, 0.2);
+}
+
+button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="file"] {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid var(--color-gris-claro);
+    border-radius: 12px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    background: var(--color-blanco);
+    color: var(--color-texto);
+    font-weight: 500;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(26, 75, 140, 0.1);
+    transform: translateY(-2px);
+}
+
+input[type="file"] {
+    padding: 12px;
+    background: var(--color-secundario);
+    border: 2px dashed var(--color-gris-claro);
+    cursor: pointer;
+}
+
+input[type="file"]:hover {
+    border-color: var(--color-primario);
+    background: var(--color-gris-claro);
+}
+
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+.history-list li {
+    background: var(--color-blanco);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-left: 4px solid var(--color-primario);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.history-list li:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(26, 75, 140, 0.08);
+}
