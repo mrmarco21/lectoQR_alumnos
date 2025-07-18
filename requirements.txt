@@ -1,0 +1,20 @@
+Flask==3.0.0
+Werkzeug==3.1.0
+Jinja2==3.1.2
+MarkupSafe==3.0.0
+itsdangerous==2.1.2
+click==8.1.7
+blinker==1.7.0
+
+# Base de datos MySQL
+PyMySQL==1.1.0
+cryptography==41.0.7
+
+# Para manejo de variables de entorno
+python-dotenv==1.0.0
+
+# Para validación de datos
+WTForms==3.1.1
+Flask-WTF==1.2.1
+
+Flask
