@@ -955,4 +955,102 @@ document.addEventListener('DOMContentLoaded', () => {
     // Agregar placeholder dinámico
     // Eliminar referencias a qrInput y qrInput.addEventListener('focus')/blur
     // Ya que el input de texto para generar QR ha sido eliminado.
+    
+    // --- VALIDACIONES DE CAMPOS EN TIEMPO REAL ---
+    
+    // Validación para DNI (solo números, máximo 8 dígitos)
+    const dniInput = document.getElementById('student-dni');
+    if (dniInput) {
+        dniInput.addEventListener('input', function(e) {
+            // Remover caracteres no numéricos
+            this.value = this.value.replace(/[^0-9]/g, '');
+            // Limitar a 8 dígitos
+            if (this.value.length > 8) {
+                this.value = this.value.slice(0, 8);
+            }
+        });
+    }
+    
+    // Validación para teléfono (solo números, máximo 9 dígitos)
+    const phoneInput = document.getElementById('student-phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            // Remover caracteres no numéricos
+            this.value = this.value.replace(/[^0-9]/g, '');
+            // Limitar a 9 dígitos
+            if (this.value.length > 9) {
+                this.value = this.value.slice(0, 9);
+            }
+        });
+    }
+    
+    // Validación para dígitos extra (solo números, máximo 2 dígitos)
+    const extraDigitsInput = document.getElementById('student-extra-digits');
+    if (extraDigitsInput) {
+        extraDigitsInput.addEventListener('input', function(e) {
+            // Remover caracteres no numéricos
+            this.value = this.value.replace(/[^0-9]/g, '');
+            // Limitar a 2 dígitos
+            if (this.value.length > 2) {
+                this.value = this.value.slice(0, 2);
+            }
+        });
+    }
+    
+    // Validación para nombres (solo letras, espacios y acentos)
+    const nameInput = document.getElementById('student-name');
+    if (nameInput) {
+        nameInput.addEventListener('input', function(e) {
+            // Permitir solo letras, espacios y caracteres acentuados
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        });
+    }
+    
+    // Validación para apellidos (solo letras, espacios y acentos)
+    const surnameInput = document.getElementById('student-apellidos');
+    if (surnameInput) {
+        surnameInput.addEventListener('input', function(e) {
+            // Permitir solo letras, espacios y caracteres acentuados
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        });
+    }
+    
+    // Validación adicional en el envío del formulario
+    const studentForm = document.getElementById('student-form');
+    if (studentForm) {
+        studentForm.addEventListener('submit', function(e) {
+            const dni = document.getElementById('student-dni').value;
+            const phone = document.getElementById('student-phone').value;
+            const name = document.getElementById('student-name').value;
+            const surnames = document.getElementById('student-apellidos').value;
+            
+            // Validar DNI
+            if (dni.length !== 8 || !/^[0-9]{8}$/.test(dni)) {
+                e.preventDefault();
+                showNotification('El DNI debe contener exactamente 8 dígitos', 'error');
+                return;
+            }
+            
+            // Validar teléfono si se proporciona
+            if (phone && (phone.length !== 9 || !/^[0-9]{9}$/.test(phone))) {
+                e.preventDefault();
+                showNotification('El teléfono debe contener exactamente 9 dígitos', 'error');
+                return;
+            }
+            
+            // Validar nombres
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name)) {
+                e.preventDefault();
+                showNotification('El nombre solo puede contener letras y espacios', 'error');
+                return;
+            }
+            
+            // Validar apellidos
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(surnames)) {
+                e.preventDefault();
+                showNotification('Los apellidos solo pueden contener letras y espacios', 'error');
+                return;
+            }
+        });
+    }
 });

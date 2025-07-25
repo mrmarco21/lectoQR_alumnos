@@ -2,7 +2,10 @@
 {% block title %}Sección QR | APPQR{% endblock %}
 {% block content %}
 <div class="container">
-    <h1 class="titulo-general"><i class="fas fa-qrcode"></i> Generador y Lector de Códigos QR</h1>
+    <div class="header-section">
+        <h1 class="titulo-general"><i class="fas fa-qrcode"></i> Generador y Lector de Códigos QR</h1>
+        <p class="header-subtitle">Sistema integral para la gestión de códigos QR de estudiantes</p>
+    </div>
     <div class="main-layout">
         <!-- Panel Izquierdo - Funciones QR -->
         <div class="panel panel--left">
@@ -75,25 +78,28 @@
             <form id="student-form">
                 <input type="hidden" id="student-edit-mode" value="false">
                 <input type="hidden" id="student-original-dni">
-                
+
                 <!-- Fila 1: DNI -->
                 <div class="input-group">
                     <span class="input-icon"><i class="fas fa-id-badge"></i></span>
-                    <input type="text" id="student-dni" placeholder="DNI" required>
+                    <input type="text" id="student-dni" placeholder="DNI (8 dígitos)" required maxlength="8"
+                        pattern="[0-9]{8}" title="Debe contener exactamente 8 dígitos">
                 </div>
-                
+
                 <!-- Fila 2: Nombre y Apellidos -->
                 <div class="input-row">
                     <div class="input-group">
                         <span class="input-icon"><i class="fas fa-user"></i></span>
-                        <input type="text" id="student-name" placeholder="Nombre completo" required>
+                        <input type="text" id="student-name" placeholder="Nombre completo" required
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo se permiten letras y espacios">
                     </div>
                     <div class="input-group">
                         <span class="input-icon"><i class="fas fa-user-tag"></i></span>
-                        <input type="text" id="student-apellidos" placeholder="Apellidos" required>
+                        <input type="text" id="student-apellidos" placeholder="Apellidos" required
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo se permiten letras y espacios">
                     </div>
                 </div>
-                
+
                 <!-- Fila 3: Email y Teléfono -->
                 <div class="input-row">
                     <div class="input-group">
@@ -102,10 +108,11 @@
                     </div>
                     <div class="input-group">
                         <span class="input-icon"><i class="fas fa-phone"></i></span>
-                        <input type="tel" id="student-phone" placeholder="Teléfono">
+                        <input type="tel" id="student-phone" placeholder="Teléfono (9 dígitos)" maxlength="9"
+                            pattern="[0-9]{9}" title="Debe contener exactamente 9 dígitos">
                     </div>
                 </div>
-                
+
                 <!-- Fila 4: Curso y Sección -->
                 <div class="input-row">
                     <div class="input-group">
@@ -117,12 +124,14 @@
                         <input type="text" id="student-section" placeholder="Sección" required>
                     </div>
                 </div>
-                
+
                 <!-- Fila 5: Dígitos extra -->
                 <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-plus"></i></span>
-                    <input type="text" id="student-extra-digits" placeholder="Dígitos extra (opcional)">
-                    <small style="color: #666; font-size: 0.8em; margin-top: 4px; display: block;">El código se genera automáticamente: 3 dígitos del DNI + 2 iniciales de apellidos + dígitos extra</small>
+                    <span class="input-icon-dextra"><i class="fas fa-plus"></i></span>
+                    <input type="text" id="student-extra-digits" placeholder="Dígitos extra (2 dígitos)"
+                        required maxlength="2" pattern="[0-9]{2}" title="Debe contener máximo 2 dígitos">
+                    <small style="color: #666; font-size: 0.8em; margin-top: 4px; display: block;">El código se genera
+                        automáticamente: 3 dígitos del DNI + 2 iniciales de apellidos + dígitos extra</small>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" id="submit-btn">
