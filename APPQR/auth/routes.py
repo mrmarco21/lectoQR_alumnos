@@ -1,10 +1,26 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect, url_for, session
 from . import auth
 from ..database import db
 
-@auth.route('/login')
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
+    if session.get('user_authenticated'):
+        return redirect(url_for('main.qr_section'))
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        # Aquí deberías validar el usuario y contraseña con la base de datos o valores fijos
+        if username == 'admin' and password == 'admin':
+            session['user_authenticated'] = True
+            return redirect(url_for('main.qr_section'))
+        else:
+            return render_template('login.html', error='Usuario o contraseña incorrectos')
     return render_template('login.html')
+
+@auth.route('/logout')
+def logout():
+    session.pop('user_authenticated', None)
+    return redirect(url_for('auth.login'))
 
 @auth.route('/api/students', methods=['GET'])
 def get_students():

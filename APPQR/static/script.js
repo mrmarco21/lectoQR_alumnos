@@ -515,26 +515,33 @@ qrFile.addEventListener('change', (e) => {
             const code = jsQR(qrCtx.getImageData(0, 0, img.width, img.height).data, img.width, img.height);
             qrReadResult.innerHTML = '';
             if (code) {
-                console.log('QR detectado (crudo):', code.data);
-                qrReadResult.innerHTML = `<div style='color:#0288d1;font-size:0.98em;'>QR detectado (crudo): <b>${code.data}</b></div>`;
                 const qrRaw = code.data;
-                const qrId = qrRaw.split('_')[0].trim();
-                const expectedId = expectedStudentInput.value.trim().toLowerCase();
-                if (
-                    expectedId &&
-                    qrId.toLowerCase() === expectedId
-                ) {
-                    qrReadResult.innerHTML += `<div style='color:green;font-weight:bold;margin-top:8px;'><i class='fas fa-check-circle'></i> QR leído exitosamente</div>`;
-                    const alumno = students.find(s => s.id.toLowerCase() === expectedId);
-                    if (alumno) showScannedStudentModal(alumno);
+                const validation = validateQRContent(qrRaw);
+                // Si está expirado, priorizar el mensaje de expirado
+                if (!validation.valid && validation.message.includes('expirado')) {
+                    qrReadResult.innerHTML = validation.message;
+                    showNotification('❌ QR expirado', 'error');
+                    readHistory.push(`❌ QR expirado: ${qrRaw}`);
+                } else if (validation.valid && validation.showStudentData && validation.student) {
+                    qrReadResult.innerHTML = validation.message;
+                    showScannedStudentModal(validation.student);
                     showNotification('QR leído exitosamente', 'success');
+                    readHistory.push(`✅ QR leído correctamente: ${qrRaw}`);
+                    // Volver a mostrar el mensaje después de abrir el modal (por si el modal lo tapa)
+                    setTimeout(() => {
+                        qrReadResult.innerHTML = validation.message;
+                    }, 500);
                 } else {
-                    qrReadResult.innerHTML += `<div style='color:#dc2626;font-weight:bold;margin-top:8px;'><i class='fas fa-times-circle'></i> El QR no coincide con el ID ingresado</div>`;
+                    qrReadResult.innerHTML = '';
                     showNotification('El QR no coincide con el ID ingresado', 'error');
+                    readHistory.push(`❌ QR incorrecto o no coincide: ${qrRaw}`);
                 }
+                renderHistory(historyRead, readHistory);
             } else {
                 qrReadResult.innerHTML = '<span class="validation-error"><i class="fas fa-exclamation-circle"></i> No se detectó ningún QR en la imagen.</span>';
                 showNotification('No se detectó ningún QR', 'error');
+                readHistory.push('❌ No se detectó ningún QR en la imagen.');
+                renderHistory(historyRead, readHistory);
             }
             // Resetear el input para permitir múltiples lecturas
             qrFile.value = '';
@@ -585,13 +592,13 @@ startCameraBtn.addEventListener('click', async () => {
     if (cameraStream) return;
     startCameraBtn.disabled = true;
     cameraDetectedQR = false;
+    // Limpiar cualquier modal de datos abierto
+    const scannedModal = document.getElementById('scanned-student-modal');
+    if (scannedModal) scannedModal.classList.remove('active');
     try {
         cameraStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            } 
+            video: { facingMode: 'environment' },
+            audio: false
         });
         qrVideo.srcObject = cameraStream;
         qrVideo.style.display = 'block';
@@ -623,7 +630,10 @@ stopCameraBtn.addEventListener('click', () => {
         qrReadResult.innerHTML = '<span class="validation-error"><i class="fas fa-exclamation-circle"></i> No se detectó ningún QR en la cámara.</span>';
         showNotification('No se detectó ningún QR', 'error');
     } else {
-        qrReadResult.innerHTML = '<span class="validation-success"><i class="fas fa-stop"></i> Cámara detenida</span>';
+        // Solo limpiar si el mensaje no es de expirado
+        if (!qrReadResult.innerHTML.includes('QR expirado')) {
+            qrReadResult.innerHTML = '<span class="validation-success"><i class="fas fa-stop"></i> Cámara detenida</span>';
+        }
     }
 });
 
@@ -634,26 +644,31 @@ function scanCameraFrame() {
         qrCanvas.height = qrVideo.videoHeight;
         qrCtx.drawImage(qrVideo, 0, 0, qrCanvas.width, qrCanvas.height);
         const code = jsQR(qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height).data, qrCanvas.width, qrCanvas.height);
-        qrReadResult.innerHTML = '';
+        console.log('jsQR result:', code); // DEPURACIÓN
+        qrReadResult.innerHTML = '<span style="color:#888;font-size:0.95em;">Procesando frame de cámara...</span>';
         if (code) {
             cameraDetectedQR = true;
-            console.log('QR detectado (crudo, camara):', code.data);
-            qrReadResult.innerHTML = `<div style='color:#0288d1;font-size:0.98em;'>QR detectado (crudo, cámara): <b>${code.data}</b></div>`;
             const qrRaw = code.data;
-            const qrId = qrRaw.split('_')[0].trim();
-            const expectedId = expectedStudentInput.value.trim().toLowerCase();
-            if (
-                expectedId &&
-                qrId.toLowerCase() === expectedId
-            ) {
-                qrReadResult.innerHTML += `<div style='color:green;font-weight:bold;margin-top:8px;'><i class='fas fa-check-circle'></i> QR leído exitosamente</div>`;
-                const alumno = students.find(s => s.id.toLowerCase() === expectedId);
-                if (alumno) showScannedStudentModal(alumno);
+            const validation = validateQRContent(qrRaw);
+            if (!validation.valid && validation.message.includes('expirado')) {
+                qrReadResult.innerHTML = `❌ QR expirado. ${qrRaw}<br>${validation.message.split('<br>').slice(1).join('<br>')}`;
+                showNotification('❌ QR expirado', 'error');
+                readHistory.push(`❌ QR expirado: ${qrRaw}`);
+            } else if (validation.valid && validation.showStudentData && validation.student) {
+                qrReadResult.innerHTML = validation.message;
+                showScannedStudentModal(validation.student);
                 showNotification('QR leído exitosamente', 'success');
+                readHistory.push(`✅ QR leído correctamente: ${qrRaw}`);
+                // Volver a mostrar el mensaje después de abrir el modal (por si el modal lo tapa)
+                setTimeout(() => {
+                    qrReadResult.innerHTML = validation.message;
+                }, 500);
             } else {
-                qrReadResult.innerHTML += `<div style='color:#dc2626;font-weight:bold;margin-top:8px;'><i class='fas fa-times-circle'></i> El QR no coincide con el ID ingresado</div>`;
+                qrReadResult.innerHTML = validation.message;
                 showNotification('El QR no coincide con el ID ingresado', 'error');
+                readHistory.push(`❌ QR incorrecto o no coincide: ${qrRaw}`);
             }
+            renderHistory(historyRead, readHistory);
             cameraScanActive = false;
             stopCameraBtn.click();
             return;

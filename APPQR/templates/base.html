@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}APPQR{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .navbar-custom {
+            width: 100%;
+            background: #01579b;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            height: 56px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .navbar-custom .nav-brand {
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #fff;
+            text-decoration: none;
+            margin-right: 32px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-custom .nav-menu {
+            display: flex;
+            gap: 16px;
+        }
+
+        .navbar-custom .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .navbar-custom .nav-link.active,
+        .navbar-custom .nav-link:hover {
+            background: #013a63;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar-custom">
+        <a class="nav-brand" href="{{ url_for('main.index') }}"><i class="fas fa-qrcode"></i> APPQR</a>
+        <div class="nav-menu">
+            <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"
+                href="{{ url_for('main.index') }}">Inicio
+            </a>
+            <a class="nav-link {% if request.endpoint == 'main.qr_section' %}active{% endif %}"
+                href="{{ url_for('main.qr_section') }}">Sección QR
+            </a>
+            {% if session.get('user_authenticated') %}
+            <a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar
+                sesión</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% block content %}{% endblock %}
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>
