@@ -46,12 +46,14 @@
                     <table class="students-table">
                         <thead>
                             <tr>
-                                <th><i class="fas fa-id-card"></i> ID</th>
+                                <th><i class="fas fa-id-badge"></i> DNI</th>
                                 <th><i class="fas fa-user"></i> Nombre</th>
+                                <th><i class="fas fa-user-tag"></i> Apellidos</th>
                                 <th><i class="fas fa-envelope"></i> Email</th>
                                 <th><i class="fas fa-graduation-cap"></i> Curso</th>
                                 <th><i class="fas fa-layer-group"></i> Sección</th>
                                 <th><i class="fas fa-phone"></i> Teléfono</th>
+                                <th><i class="fas fa-key"></i> Código</th>
                                 <th><i class="fas fa-cogs"></i> Acciones</th>
                             </tr>
                         </thead>
@@ -68,42 +70,92 @@
                 <div class="modal-icon">
                     <i class="fas fa-user-plus"></i>
                 </div>
-                <h2 class="modal-title">Registrar Alumno</h2>
+                <h2 class="modal-title" id="modal-title">Registrar Alumno</h2>
             </div>
             <form id="student-form">
+                <input type="hidden" id="student-edit-mode" value="false">
+                <input type="hidden" id="student-original-dni">
+                
+                <!-- Fila 1: DNI -->
                 <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-id-card"></i></span>
-                    <input type="text" id="student-id" placeholder="ID del alumno" required>
+                    <span class="input-icon"><i class="fas fa-id-badge"></i></span>
+                    <input type="text" id="student-dni" placeholder="DNI" required>
                 </div>
-                <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-user"></i></span>
-                    <input type="text" id="student-name" placeholder="Nombre completo" required>
+                
+                <!-- Fila 2: Nombre y Apellidos -->
+                <div class="input-row">
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <input type="text" id="student-name" placeholder="Nombre completo" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-user-tag"></i></span>
+                        <input type="text" id="student-apellidos" placeholder="Apellidos" required>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                    <input type="email" id="student-email" placeholder="Email">
+                
+                <!-- Fila 3: Email y Teléfono -->
+                <div class="input-row">
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="student-email" placeholder="Email">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-phone"></i></span>
+                        <input type="tel" id="student-phone" placeholder="Teléfono">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-graduation-cap"></i></span>
-                    <input type="text" id="student-course" placeholder="Curso/Grado" required>
+                
+                <!-- Fila 4: Curso y Sección -->
+                <div class="input-row">
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-graduation-cap"></i></span>
+                        <input type="text" id="student-course" placeholder="Curso/Grado" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-layer-group"></i></span>
+                        <input type="text" id="student-section" placeholder="Sección" required>
+                    </div>
                 </div>
+                
+                <!-- Fila 5: Dígitos extra -->
                 <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-layer-group"></i></span>
-                    <input type="text" id="student-section" placeholder="Sección" required>
-                </div>
-                <div class="input-group">
-                    <span class="input-icon"><i class="fas fa-phone"></i></span>
-                    <input type="tel" id="student-phone" placeholder="Teléfono">
+                    <span class="input-icon"><i class="fas fa-plus"></i></span>
+                    <input type="text" id="student-extra-digits" placeholder="Dígitos extra (opcional)">
+                    <small style="color: #666; font-size: 0.8em; margin-top: 4px; display: block;">El código se genera automáticamente: 3 dígitos del DNI + 2 iniciales de apellidos + dígitos extra</small>
                 </div>
                 <div class="modal-actions">
-                    <button type="submit">
-                        <i class="fas fa-save"></i> Guardar
+                    <button type="submit" id="submit-btn">
+                        <i class="fas fa-save"></i> <span id="submit-text">Guardar</span>
                     </button>
                     <button type="button" id="close-student-form-btn" class="modal-actions__cancel">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- Modal de confirmación para eliminar -->
+    <div class="modal-overlay" id="delete-confirmation-modal">
+        <div class="modal delete-confirmation-modal">
+            <div class="modal-header">
+                <div class="modal-icon delete-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 class="modal-title">Confirmar Eliminación</h2>
+            </div>
+            <div class="modal-body">
+                <p id="delete-confirmation-message">¿Estás seguro de que deseas eliminar este estudiante?</p>
+                <div class="student-info" id="delete-student-info"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="confirm-delete-btn" class="btn-delete">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+                <button type="button" id="cancel-delete-btn" class="modal-actions__cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
         </div>
     </div>
     <!-- Modal para mostrar datos del alumno escaneado -->

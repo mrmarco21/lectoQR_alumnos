@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect, url_for, session
 from . import auth
 from ..database import db
-
+ 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('user_authenticated'):
@@ -38,7 +38,7 @@ def create_student():
         data = request.get_json()
         
         # Validar datos requeridos
-        required_fields = ['id', 'name', 'course', 'section']
+        required_fields = ['dni', 'name', 'apellidos', 'course', 'section']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({"error": f"Campo requerido: {field}"}), 400
@@ -71,7 +71,7 @@ def update_student(student_id):
     try:
         data = request.get_json()
         
-        # Validar datos requeridos
+        # Validar datos requeridos (DNI y apellidos son opcionales para actualización)
         required_fields = ['name', 'course', 'section']
         for field in required_fields:
             if not data.get(field):
@@ -130,4 +130,4 @@ def add_qr_history():
             return jsonify({"error": "Error al agregar historial"}), 500
             
     except Exception as e:
-        return jsonify({"error": str(e)}), 500 
+        return jsonify({"error": str(e)}), 500

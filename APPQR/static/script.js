@@ -77,32 +77,222 @@ studentForm.addEventListener('submit', async (e) => {
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
     submitBtn.disabled = true;
+    const isEditMode = document.getElementById('student-edit-mode').value === 'true';
     const student = {
-        id: document.getElementById('student-id').value,
+        dni: document.getElementById('student-dni').value,
         name: document.getElementById('student-name').value,
+        apellidos: document.getElementById('student-apellidos').value,
         email: document.getElementById('student-email').value,
+        phone: document.getElementById('student-phone').value,
         course: document.getElementById('student-course').value,
         section: document.getElementById('student-section').value,
-        phone: document.getElementById('student-phone').value
+        extra_digits: document.getElementById('student-extra-digits').value
     };
+    
+    // Para compatibilidad con la API, agregar id como dni
+    student.id = student.dni;
     try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(student)
-        });
-        if (!res.ok) throw new Error("Error al registrar alumno.");
-        studentForm.reset();
+        let res;
+        if (isEditMode) {
+            const originalDni = document.getElementById('student-original-dni').value;
+            res = await fetch(`${API_URL}/${originalDni}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(student)
+            });
+            if (!res.ok) throw new Error("Error al actualizar alumno.");
+            showNotification('Alumno actualizado exitosamente', 'success');
+        } else {
+            res = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(student)
+            });
+            if (!res.ok) throw new Error("Error al registrar alumno.");
+            showNotification('Alumno registrado exitosamente', 'success');
+        }
+        
+        resetForm();
         cargarAlumnos();
-        showNotification('Alumno registrado exitosamente', 'success');
         document.getElementById('student-modal').classList.remove('active');
     } catch (err) {
-        showNotification('Error al registrar alumno: ' + err.message, 'error');
+        showNotification(`Error al ${isEditMode ? 'actualizar' : 'registrar'} alumno: ` + err.message, 'error');
     } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     }
 });
+
+// Función para resetear el formulario
+function resetForm() {
+    studentForm.reset();
+    document.getElementById('student-edit-mode').value = 'false';
+    document.getElementById('student-original-dni').value = '';
+    
+    const modalTitle = document.getElementById('modal-title');
+    const submitText = document.getElementById('submit-text');
+    const submitIcon = document.querySelector('#submit-btn i');
+    
+    if (modalTitle) modalTitle.textContent = 'Registrar Alumno';
+    if (submitText) submitText.textContent = 'Guardar';
+    if (submitIcon) submitIcon.className = 'fas fa-save';
+}
+
+// Función para extraer dígitos extra del código
+function extractExtraDigits(codigo, dni, apellidos) {
+    if (!codigo || !dni || !apellidos) return '';
+    
+    try {
+        // Obtener los primeros 3 dígitos del DNI
+        const dniDigits = ''.join ? dni.split('').filter(char => /\d/.test(char)).slice(0, 3).join('') : dni.replace(/\D/g, '').substring(0, 3);
+        
+        // Obtener las primeras 2 iniciales de los apellidos
+        const apellidosWords = apellidos.trim().split(' ');
+        let initials = '';
+        for (let i = 0; i < Math.min(2, apellidosWords.length); i++) {
+            if (apellidosWords[i]) {
+                initials += apellidosWords[i][0].toUpperCase();
+            }
+        }
+        
+        // Si solo hay un apellido, tomar las primeras 2 letras
+        if (initials.length === 1 && apellidosWords[0] && apellidosWords[0].length > 1) {
+            initials += apellidosWords[0][1].toUpperCase();
+        }
+        
+        // Completar con 'X' si no hay suficientes iniciales
+        initials = initials.padEnd(2, 'X');
+        
+        // El código base son los 3 dígitos del DNI + 2 iniciales
+        const codigoBase = dniDigits + initials;
+        
+        // Los dígitos extra son todo lo que viene después del código base
+        if (codigo.length > codigoBase.length) {
+            return codigo.substring(codigoBase.length);
+        }
+        
+        return '';
+    } catch (error) {
+        console.error('Error extrayendo dígitos extra:', error);
+        return '';
+    }
+}
+
+// Función para editar estudiante
+function editStudent(dni) {
+    const student = students.find(s => (s.dni || s.id) === dni);
+    if (!student) {
+        showNotification('Estudiante no encontrado', 'error');
+        return;
+    }
+    
+    // Extraer dígitos extra del código existente
+    const extraDigits = extractExtraDigits(student.codigo, student.dni || student.id, student.apellidos);
+    
+    // Llenar el formulario con los datos del estudiante
+    document.getElementById('student-dni').value = student.dni || student.id;
+    document.getElementById('student-name').value = student.name;
+    document.getElementById('student-apellidos').value = student.apellidos || '';
+    document.getElementById('student-email').value = student.email || '';
+    document.getElementById('student-phone').value = student.phone || '';
+    document.getElementById('student-course').value = student.course;
+    document.getElementById('student-section').value = student.section;
+    document.getElementById('student-extra-digits').value = extraDigits;
+    
+    // Configurar modo edición
+    document.getElementById('student-edit-mode').value = 'true';
+    document.getElementById('student-original-dni').value = student.dni || student.id;
+    
+    const modalTitle = document.getElementById('modal-title');
+    const submitText = document.getElementById('submit-text');
+    const submitIcon = document.querySelector('#submit-btn i');
+    
+    if (modalTitle) modalTitle.textContent = 'Editar Alumno';
+    if (submitText) submitText.textContent = 'Actualizar';
+    if (submitIcon) submitIcon.className = 'fas fa-edit';
+    
+    // Abrir modal
+    document.getElementById('student-modal').classList.add('active');
+}
+
+// Variable global para almacenar el DNI del estudiante a eliminar
+let studentToDelete = null;
+
+// Función para eliminar estudiante
+window.deleteStudent = function(dni) {
+    const student = students.find(s => (s.dni || s.id) === dni);
+    if (!student) {
+        showNotification('Estudiante no encontrado', 'error');
+        return;
+    }
+    
+    // Almacenar el DNI del estudiante a eliminar
+    studentToDelete = dni;
+    
+    // Mostrar información del estudiante en el modal
+    const studentInfo = document.getElementById('delete-student-info');
+    if (studentInfo) {
+        studentInfo.innerHTML = `
+            <strong>DNI:</strong> ${student.dni || student.id}<br>
+            <strong>Nombre:</strong> ${student.name}<br>
+            <strong>Apellidos:</strong> ${student.apellidos || ''}<br>
+            <strong>Curso:</strong> ${student.course || ''}
+        `;
+    }
+    
+    // Mostrar el modal de confirmación
+    const deleteModal = document.getElementById('delete-confirmation-modal');
+    if (deleteModal) {
+        deleteModal.style.display = 'flex';
+        setTimeout(() => deleteModal.classList.add('show'), 10);
+    }
+}
+
+// Función para confirmar la eliminación
+window.confirmDelete = function() {
+    console.log('confirmDelete called');
+    if (!studentToDelete) {
+        console.log('No student to delete');
+        return;
+    }
+    
+    fetch(`${API_URL}/${studentToDelete}`, {
+        method: 'DELETE'
+    })
+    .then(res => {
+        if (res.ok) {
+            showNotification('Estudiante eliminado exitosamente', 'success');
+            // Cerrar el modal
+            window.closeDeleteModal();
+            // Recargar la página después de un breve delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            throw new Error('Error al eliminar estudiante');
+        }
+    })
+    .catch(err => {
+        showNotification('Error al eliminar estudiante: ' + err.message, 'error');
+        window.closeDeleteModal();
+    });
+}
+
+// Función para cerrar el modal de eliminación
+window.closeDeleteModal = function() {
+    console.log('closeDeleteModal called');
+    const deleteModal = document.getElementById('delete-confirmation-modal');
+    if (deleteModal) {
+        console.log('Modal found, closing...');
+        deleteModal.classList.remove('show');
+        setTimeout(() => {
+            deleteModal.style.display = 'none';
+            studentToDelete = null;
+        }, 300);
+    } else {
+        console.log('Modal not found');
+    }
+}
 
 async function cargarAlumnos() {
     try {
@@ -121,7 +311,7 @@ async function cargarAlumnos() {
 
         studentsTbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; color: #dc2626;">
+                <td colspan="9" style="text-align: center; color: #dc2626;">
                     <i class="fas fa-exclamation-triangle"></i> ${mensajeError}
                 </td>
             </tr>`;
@@ -135,7 +325,7 @@ function renderStudentsTable() {
     studentsTbody.innerHTML = '';
     
     if (students.length === 0) {
-        studentsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b;">
+        studentsTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b;">
             <i class="fas fa-users"></i> No hay alumnos registrados
         </td></tr>`;
         return;
@@ -144,15 +334,23 @@ function renderStudentsTable() {
     students.forEach(student => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td><strong>${student.id}</strong></td>
+            <td><strong>${student.dni || student.id}</strong></td>
             <td>${student.name}</td>
+            <td>${student.apellidos || '-'}</td>
             <td>${student.email || '-'}</td>
             <td>${student.course}</td>
             <td>${student.section}</td>
             <td>${student.phone || '-'}</td>
-            <td>
-                <button class="student-qr-btn" onclick="generateStudentQR('${student.id}')" title="Generar QR para ${student.name}">
-                    <i class="fas fa-qrcode"></i> Generar QR
+            <td><strong style="color: #01579b;">${student.codigo || '-'}</strong></td>
+            <td class="actions-cell">
+                <button onclick="generateStudentQR('${student.dni || student.id}')" class="btn-action btn-qr" title="Generar QR">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+                <button onclick="editStudent('${student.dni || student.id}')" class="btn-action btn-edit" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteStudent('${student.dni || student.id}')" class="btn-action btn-delete" title="Eliminar">
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         `;
@@ -161,7 +359,7 @@ function renderStudentsTable() {
 }
 
 window.generateStudentQR = function(studentId) {
-    const student = students.find(s => s.id === studentId);
+    const student = students.find(s => (s.dni || s.id) === studentId);
     if (!student) {
         showNotification('Alumno no encontrado', 'error');
         return;
@@ -228,6 +426,7 @@ window.generateStudentQR = function(studentId) {
                 <div class="info-row"><span class="label"><i class="fas fa-graduation-cap"></i> Ciclo:</span><span class="value">${student.course}</span></div>
                 <div class="info-row"><span class="label"><i class="fas fa-layer-group"></i> Sección:</span><span class="value">${student.section}</span></div>
                 <div class="info-row"><span class="label"><i class="fas fa-phone"></i> Teléfono:</span><span class="value">${student.phone || 'No especificado'}</span></div>
+                <div class="info-row"><span class="label"><i class="fas fa-key"></i> Código:</span><span class="value" style="font-weight: bold; color: #01579b;">${student.codigo || 'No generado'}</span></div>
             </div>
         </div>
     `;
@@ -349,16 +548,24 @@ function showStudentData(student) {
             <h4><i class="fas fa-user-graduate"></i> Datos del Alumno</h4>
             <div class="student-info">
                 <div class="info-row">
-                    <span class="label"><i class="fas fa-id-card"></i> ID:</span>
-                    <span class="value">${student.id}</span>
+                    <span class="label"><i class="fas fa-id-card"></i> DNI:</span>
+                    <span class="value">${student.dni || student.id}</span>
                 </div>
                 <div class="info-row">
                     <span class="label"><i class="fas fa-user"></i> Nombre:</span>
                     <span class="value">${student.name}</span>
                 </div>
                 <div class="info-row">
+                    <span class="label"><i class="fas fa-user"></i> Apellidos:</span>
+                    <span class="value">${student.apellidos || 'No especificado'}</span>
+                </div>
+                <div class="info-row">
                     <span class="label"><i class="fas fa-envelope"></i> Email:</span>
                     <span class="value">${student.email || 'No especificado'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label"><i class="fas fa-phone"></i> Teléfono:</span>
+                    <span class="value">${student.phone || 'No especificado'}</span>
                 </div>
                 <div class="info-row">
                     <span class="label"><i class="fas fa-graduation-cap"></i> Curso:</span>
@@ -369,8 +576,8 @@ function showStudentData(student) {
                     <span class="value">${student.section}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label"><i class="fas fa-phone"></i> Teléfono:</span>
-                    <span class="value">${student.phone || 'No especificado'}</span>
+                    <span class="label"><i class="fas fa-key"></i> Código:</span>
+                    <span class="value" style="font-weight: bold; color: #01579b;">${student.codigo || 'No generado'}</span>
                 </div>
             </div>
         </div>
@@ -559,12 +766,14 @@ function showScannedStudentModal(student) {
         <div class="student-data-card">
             <h4><i class="fas fa-user-graduate"></i> Datos del Alumno</h4>
             <div class="student-info">
-                <div class="info-row"><span class="label"><i class="fas fa-id-card"></i> ID:</span><span class="value">${student.id}</span></div>
+                <div class="info-row"><span class="label"><i class="fas fa-id-card"></i> DNI:</span><span class="value">${student.dni || student.id}</span></div>
                 <div class="info-row"><span class="label"><i class="fas fa-user"></i> Nombre:</span><span class="value">${student.name}</span></div>
+                <div class="info-row"><span class="label"><i class="fas fa-user"></i> Apellidos:</span><span class="value">${student.apellidos || 'No especificado'}</span></div>
                 <div class="info-row"><span class="label"><i class="fas fa-envelope"></i> Email:</span><span class="value">${student.email || 'No especificado'}</span></div>
+                <div class="info-row"><span class="label"><i class="fas fa-phone"></i> Teléfono:</span><span class="value">${student.phone || 'No especificado'}</span></div>
                 <div class="info-row"><span class="label"><i class="fas fa-graduation-cap"></i> Ciclo:</span><span class="value">${student.course}</span></div>
                 <div class="info-row"><span class="label"><i class="fas fa-layer-group"></i> Sección:</span><span class="value">${student.section}</span></div>
-                <div class="info-row"><span class="label"><i class="fas fa-phone"></i> Teléfono:</span><span class="value">${student.phone || 'No especificado'}</span></div>
+                <div class="info-row"><span class="label"><i class="fas fa-key"></i> Código:</span><span class="value" style="font-weight: bold; color: #01579b;">${student.codigo || 'No generado'}</span></div>
             </div>
         </div>
     `;
@@ -684,13 +893,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('close-student-form-btn');
     const modal = document.getElementById('student-modal');
     openBtn.addEventListener('click', () => {
+        resetForm();
         modal.classList.add('active');
     });
     closeBtn.addEventListener('click', () => {
+        resetForm();
         modal.classList.remove('active');
     });
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
+            resetForm();
             modal.classList.remove('active');
         }
     });
@@ -701,6 +913,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Cargar alumnos al inicio
     cargarAlumnos();
+    
+    // Event listeners para el modal de confirmación de eliminación
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    const deleteModal = document.getElementById('delete-confirmation-modal');
+    
+    console.log('Setting up delete modal event listeners');
+    console.log('confirmDeleteBtn:', confirmDeleteBtn);
+    console.log('cancelDeleteBtn:', cancelDeleteBtn);
+    console.log('deleteModal:', deleteModal);
+    
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Confirm delete button clicked');
+            window.confirmDelete();
+        });
+    }
+    
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Cancel delete button clicked');
+            window.closeDeleteModal();
+        });
+    }
+    
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function(e) {
+            console.log('Delete modal clicked, target:', e.target);
+            if (e.target === deleteModal) {
+                console.log('Clicked outside modal content');
+                window.closeDeleteModal();
+            }
+        });
+    }
     
     // Agregar placeholder dinámico
     // Eliminar referencias a qrInput y qrInput.addEventListener('focus')/blur
